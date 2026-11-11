@@ -23,7 +23,9 @@
       this.transferInProgress = false;
       this.pollTimer = null;
       this.transferQueues = [];
+      this.agentSessionId = null;
       this.agentInfoUpdatedHandler = null;
+      this.agentChannelStateChangedHandler = null;
       this.queueListRequestInProgress = false;
 
       this.config = {
@@ -573,7 +575,7 @@
         agentInfo.agentProfileId;
 
       const agentSessionId =
-        agentInfo.agentSessionId;
+        this.agentSessionId || agentInfo.agentSessionId;
 
       if (!agentProfileId || !agentSessionId) {
         console.warn(
@@ -957,12 +959,53 @@
             }
           );
 
+          if (latestAgentInfo.agentSessionId) {
+            this.agentSessionId = latestAgentInfo.agentSessionId;
+          }
+
           this.loadTransferQueues();
+        };
+
+        this.agentChannelStateChangedHandler = eventData => {
+          const latestAgentInfo =
+            this.Desktop?.agentStateInfo?.latestData || {};
+
+          const payload = eventData?.data || eventData?.detail || eventData || {};
+          const sessionId =
+            payload.agentSessionId ||
+            payload.data?.agentSessionId ||
+            latestAgentInfo.agentSessionId;
+
+          console.log(
+            "[WXCC Quick Transfer V12] eAgentChannelStateChanged event:",
+            eventData
+          );
+
+          if (sessionId) {
+            this.agentSessionId = String(sessionId);
+            console.info(
+              "[WXCC Quick Transfer V12] Captured agentSessionId from channel-state event."
+            );
+            this.loadTransferQueues();
+          } else {
+            console.warn(
+              "[WXCC Quick Transfer V12] Channel-state event received without agentSessionId.",
+              {
+                eventKeys: Object.keys(payload || {}),
+                latestAgentInfoFields: Object.keys(latestAgentInfo || {})
+              }
+            );
+          }
         };
 
         this.Desktop.agentStateInfo.addEventListener(
           "updated",
           this.agentInfoUpdatedHandler
+        );
+
+        this.Desktop.agentStateInfo.addEventListener(
+          "eAgentChannelStateChanged",
+          this.agentChannelStateChangedHandler
         );
 
         await this.loadTransferQueues();
@@ -994,15 +1037,22 @@
         this.pollTimer = null;
       }
 
-      if (
-        this.agentInfoUpdatedHandler &&
-        this.Desktop?.agentStateInfo?.removeEventListener
-      ) {
-        this.Desktop.agentStateInfo.removeEventListener(
-          "updated",
-          this.agentInfoUpdatedHandler
-        );
-        this.agentInfoUpdatedHandler = null;
+      if (this.Desktop?.agentStateInfo?.removeEventListener) {
+        if (this.agentInfoUpdatedHandler) {
+          this.Desktop.agentStateInfo.removeEventListener(
+            "updated",
+            this.agentInfoUpdatedHandler
+          );
+          this.agentInfoUpdatedHandler = null;
+        }
+
+        if (this.agentChannelStateChangedHandler) {
+          this.Desktop.agentStateInfo.removeEventListener(
+            "eAgentChannelStateChanged",
+            this.agentChannelStateChangedHandler
+          );
+          this.agentChannelStateChangedHandler = null;
+        }
       }
     }
   }
