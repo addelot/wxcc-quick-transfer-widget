@@ -970,10 +970,17 @@
           const latestAgentInfo =
             this.Desktop?.agentStateInfo?.latestData || {};
 
-          const payload = eventData?.data || eventData?.detail || eventData || {};
+          const payload = eventData?.data?.data ||
+            eventData?.data ||
+            eventData?.detail?.data ||
+            eventData?.detail ||
+            eventData ||
+            {};
           const sessionId =
             payload.agentSessionId ||
             payload.data?.agentSessionId ||
+            payload.data?.data?.agentSessionId ||
+            eventData?.agentSessionId ||
             latestAgentInfo.agentSessionId;
 
           console.log(
@@ -1006,6 +1013,15 @@
         this.Desktop.agentStateInfo.addEventListener(
           "eAgentChannelStateChanged",
           this.agentChannelStateChangedHandler
+        );
+
+        console.info(
+          "[WXCC Quick Transfer V12] Registered eAgentChannelStateChanged listener.",
+          {
+            hasAgentStateInfo: !!this.Desktop.agentStateInfo,
+            hasAddEventListener: typeof this.Desktop.agentStateInfo?.addEventListener === "function",
+            hasRemoveEventListener: typeof this.Desktop.agentStateInfo?.removeEventListener === "function"
+          }
         );
 
         await this.loadTransferQueues();
