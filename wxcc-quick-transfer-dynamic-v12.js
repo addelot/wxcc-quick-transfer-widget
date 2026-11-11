@@ -863,8 +863,50 @@
 
       } catch (error) {
 
+        const errorDetails = {};
+
+        if (error !== null && error !== undefined) {
+          errorDetails.name = error.name;
+          errorDetails.message = error.message;
+          errorDetails.stack = error.stack;
+
+          let current = error;
+          let depth = 0;
+
+          while (current && depth < 3) {
+            Object.getOwnPropertyNames(current).forEach(key => {
+              try {
+                const value = current[key];
+
+                if (
+                  value === null ||
+                  ["string", "number", "boolean"].includes(typeof value)
+                ) {
+                  errorDetails[key] = value;
+                } else if (value && typeof value === "object") {
+                  try {
+                    errorDetails[key] = JSON.parse(JSON.stringify(value));
+                  } catch (_) {
+                    errorDetails[key] = String(value);
+                  }
+                }
+              } catch (propertyError) {
+                errorDetails[key] = "[Could not read property]";
+              }
+            });
+
+            current = Object.getPrototypeOf(current);
+            depth++;
+          }
+        }
+
         console.error(
-          "[WXCC Quick Transfer V12] Transfer failed",
+          "[WXCC Quick Transfer V12] Transfer failed - detailed error:",
+          errorDetails
+        );
+
+        console.error(
+          "[WXCC Quick Transfer V12] Original error object:",
           error
         );
 
