@@ -938,7 +938,25 @@
           "Axis"
         );
 
-        this.agentInfoUpdatedHandler = () => {
+        this.agentInfoUpdatedHandler = eventData => {
+          const latestAgentInfo =
+            this.Desktop?.agentStateInfo?.latestData || {};
+
+          console.log(
+            "[WXCC Quick Transfer V12] Agent info updated event:",
+            eventData
+          );
+
+          console.log(
+            "[WXCC Quick Transfer V12] Agent info snapshot inside updated event:",
+            {
+              agentProfileID: latestAgentInfo.agentProfileID,
+              agentSessionId: latestAgentInfo.agentSessionId,
+              agentSessionIdType: typeof latestAgentInfo.agentSessionId,
+              availableFields: Object.keys(latestAgentInfo)
+            }
+          );
+
           this.loadTransferQueues();
         };
 
