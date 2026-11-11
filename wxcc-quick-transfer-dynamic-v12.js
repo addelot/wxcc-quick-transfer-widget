@@ -22,6 +22,9 @@
       this.activeInteractionId = null;
       this.transferInProgress = false;
       this.pollTimer = null;
+      this.transferQueues = [];
+      this.agentInfoUpdatedHandler = null;
+      this.queueListRequestInProgress = false;
 
       this.config = {
         title: "Quick Transfer",
@@ -558,6 +561,149 @@
       }
     }
 
+    async loadTransferQueues() {
+
+      if (this.queueListRequestInProgress) return;
+
+      const agentInfo =
+        this.Desktop?.agentStateInfo?.latestData || {};
+
+      const agentProfileId =
+        agentInfo.agentProfileID ||
+        agentInfo.agentProfileId;
+
+      const agentSessionId =
+        agentInfo.agentSessionId;
+
+      if (!agentProfileId || !agentSessionId) {
+        console.warn(
+          "[WXCC Quick Transfer V12] Queue lookup waiting for agent profile/session data.",
+          {
+            agentProfileId: !!agentProfileId,
+            agentSessionId: !!agentSessionId,
+            availableAgentInfoFields: Object.keys(agentInfo || {})
+          }
+        );
+        return;
+      }
+
+      this.queueListRequestInProgress = true;
+
+      try {
+        const response =
+          await this.Desktop.agentContact.vteamList({
+            data: {
+              agentProfileId: String(agentProfileId),
+              agentSessionId: String(agentSessionId),
+              channelType: "telephony",
+              type: "inboundqueue",
+              trackingId: (
+                typeof crypto !== "undefined" &&
+                typeof crypto.randomUUID === "function"
+              )
+                ? crypto.randomUUID()
+                : String(Date.now())
+            }
+          });
+
+        console.log(
+          "[WXCC Quick Transfer V12] Raw vteamList response:",
+          response
+        );
+
+        const candidates = [
+          response?.data?.data?.vteamList,
+          response?.data?.vteamList,
+          response?.data?.data?.data?.vteamList,
+          response?.vteamList
+        ];
+
+        this.transferQueues =
+          candidates.find(Array.isArray) || [];
+
+        console.group(
+          "[WXCC Quick Transfer V12] Available telephony queues"
+        );
+
+        if (this.transferQueues.length) {
+          console.table(
+            this.transferQueues.map(queue => ({
+              name: queue.name,
+              analyzerId: queue.analyzerId,
+              id: queue.id,
+              type: queue.type,
+              channelType: queue.channelType
+            }))
+          );
+        } else {
+          console.warn(
+            "No vteamList array was found. Check the raw response above."
+          );
+        }
+
+        console.groupEnd();
+
+      } catch (error) {
+        console.error(
+          "[WXCC Quick Transfer V12] Queue lookup failed:",
+          error
+        );
+      } finally {
+        this.queueListRequestInProgress = false;
+      }
+    }
+
+    resolveQueueDestination(cfg) {
+
+      const configuredId = String(cfg.queueId || "").trim();
+      const configuredName = String(
+        cfg.queueName || cfg.label || ""
+      ).trim().toLowerCase();
+
+      const matchById = this.transferQueues.find(queue =>
+        [
+          queue.analyzerId,
+          queue.id,
+          queue.queueId,
+          queue.uuid
+        ].some(value =>
+          value !== undefined &&
+          value !== null &&
+          String(value) === configuredId
+        )
+      );
+
+      const matchByName = configuredName
+        ? this.transferQueues.find(queue =>
+            String(queue.name || "").trim().toLowerCase() === configuredName
+          )
+        : null;
+
+      const match = matchById || matchByName;
+
+      if (!match || !match.analyzerId) {
+        throw new Error(
+          "Could not match this button to a transferable queue. " +
+          "Open the Console and check the Available telephony queues table. " +
+          "Use the matching queue analyzerId as queueId, or make the button label " +
+          "match the exact queue name."
+        );
+      }
+
+      console.info(
+        "[WXCC Quick Transfer V12] Resolved queue destination:",
+        {
+          configuredQueueId: configuredId,
+          configuredLabel: cfg.label,
+          queueName: match.name,
+          queueId: match.id,
+          analyzerId: match.analyzerId
+        }
+      );
+
+      return match.analyzerId;
+    }
+
     async transfer(cfg) {
 
       const transferType = String(
@@ -619,11 +765,12 @@
 
         if (transferType === "queue") {
 
-          if (!cfg.queueId) {
-            throw new Error(
-              "Queue transfer requires queueId (the queue analyzerId/vTeam ID)."
-            );
+          if (!this.transferQueues.length) {
+            await this.loadTransferQueues();
           }
+
+          const queueAnalyzerId =
+            this.resolveQueueDestination(cfg);
 
           response =
             await this.Desktop.agentContact.vteamTransferV2({
@@ -631,7 +778,7 @@
               interactionId,
 
               data: {
-                to: String(cfg.queueId),
+                to: String(queueAnalyzerId),
                 destinationType: "queue"
               }
 
@@ -749,6 +896,16 @@
           "Axis"
         );
 
+        this.agentInfoUpdatedHandler = () => {
+          this.loadTransferQueues();
+        };
+
+        this.Desktop.agentStateInfo.addEventListener(
+          "updated",
+          this.agentInfoUpdatedHandler
+        );
+
+        await this.loadTransferQueues();
         await this.refreshInteraction();
 
         this.pollTimer = setInterval(() => {
@@ -775,6 +932,17 @@
       if (this.pollTimer) {
         clearInterval(this.pollTimer);
         this.pollTimer = null;
+      }
+
+      if (
+        this.agentInfoUpdatedHandler &&
+        this.Desktop?.agentStateInfo?.removeEventListener
+      ) {
+        this.Desktop.agentStateInfo.removeEventListener(
+          "updated",
+          this.agentInfoUpdatedHandler
+        );
+        this.agentInfoUpdatedHandler = null;
       }
     }
   }
