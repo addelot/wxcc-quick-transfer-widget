@@ -4,6 +4,12 @@
 
   const TAG = "wxcc-quick-transfer-v12";
 
+  // Set to true temporarily when detailed browser-console diagnostics are needed.
+  const DEBUG = false;
+  const debugLog = (...args) => {
+    if (DEBUG) console.debug(...args);
+  };
+
   const SDK_URLS = [
     "https://cdn.jsdelivr.net/npm/@wxcc-desktop/sdk/+esm",
     "https://esm.sh/@wxcc-desktop/sdk"
@@ -571,7 +577,7 @@
 
     restoreCachedAgentSession(agentProfileId) {
       if (this.agentSessionId) {
-        console.info("[WXCC Quick Transfer V12] Session restore skipped; this widget instance already has an agentSessionId.");
+        debugLog("[WXCC Quick Transfer V12] Session restore skipped; this widget instance already has an agentSessionId.");
         return this.agentSessionId;
       }
       if (!agentProfileId) {
@@ -585,7 +591,7 @@
         const cached =
           localStorage.getItem(cacheKey) ||
           sessionStorage.getItem(cacheKey);
-        console.info("[WXCC Quick Transfer V12] Session cache checked.", {
+        debugLog("[WXCC Quick Transfer V12] Session cache checked.", {
           agentProfileId: String(agentProfileId),
           cacheKey,
           cacheHit: !!cached,
@@ -595,7 +601,7 @@
         if (cached) {
           this.agentSessionId = cached;
           this.sessionIdWasRestoredFromCache = true;
-          console.info("[WXCC Quick Transfer V12] Restored cached agentSessionId for current agent profile.");
+          debugLog("[WXCC Quick Transfer V12] Restored cached agentSessionId for current agent profile.");
         }
       } catch (error) {
         console.warn("[WXCC Quick Transfer V12] Could not read session cache:", error);
@@ -619,7 +625,7 @@
         // Also maintain the prior sessionStorage entry for compatibility.
         sessionStorage.setItem(cacheKey, this.agentSessionId);
         const verified = localStorage.getItem(cacheKey);
-        console.info("[WXCC Quick Transfer V12] Session cache write verified.", {
+        debugLog("[WXCC Quick Transfer V12] Session cache write verified.", {
           agentProfileId: String(agentProfileId),
           cacheKey,
           cacheStorage: "localStorage",
@@ -686,7 +692,7 @@
             }
           });
 
-          console.log(
+          debugLog(
             "[WXCC Quick Transfer V12] Raw vteamList response:",
             response
           );
@@ -709,25 +715,19 @@
 
           this.transferQueues = queues;
 
-          console.group(
-            "[WXCC Quick Transfer V12] Available telephony queues"
+          debugLog(
+            "[WXCC Quick Transfer V12] Available telephony queues:",
+            this.transferQueues.map(queue => ({
+              name: queue.name,
+              analyzerId: queue.analyzerId,
+              id: queue.id,
+              type: queue.type,
+              channelType: queue.channelType
+            }))
           );
-
-          if (this.transferQueues.length) {
-            console.table(
-              this.transferQueues.map(queue => ({
-                name: queue.name,
-                analyzerId: queue.analyzerId,
-                id: queue.id,
-                type: queue.type,
-                channelType: queue.channelType
-              }))
-            );
-          } else {
-            console.warn("Cisco returned an empty transfer queue list.");
+          if (!this.transferQueues.length) {
+            console.warn("[WXCC Quick Transfer V12] Cisco returned an empty transfer queue list.");
           }
-
-          console.groupEnd();
           return true;
 
         } catch (error) {
@@ -802,7 +802,7 @@
         throw new Error("Matched queue has no usable destination identifier.");
       }
 
-      console.info(
+      debugLog(
         "[WXCC Quick Transfer V12] Diagnostic queue destination:",
         {
           configuredQueueId: configuredId,
@@ -948,7 +948,7 @@
             });
         }
 
-        console.info(
+        debugLog(
           "[WXCC Quick Transfer V12] Raw transfer API response:",
           response
         );
@@ -1027,7 +1027,7 @@
           }
         }
 
-        console.error(
+        debugLog(
           "[WXCC Quick Transfer V12] Transfer failed - detailed error:",
           errorDetails
         );
@@ -1069,12 +1069,12 @@
           const latestAgentInfo =
             this.Desktop?.agentStateInfo?.latestData || {};
 
-          console.log(
+          debugLog(
             "[WXCC Quick Transfer V12] Agent info updated event:",
             eventData
           );
 
-          console.log(
+          debugLog(
             "[WXCC Quick Transfer V12] Agent info snapshot inside updated event:",
             {
               agentProfileID: latestAgentInfo.agentProfileID,
@@ -1112,7 +1112,7 @@
             eventData?.agentSessionId ||
             latestAgentInfo.agentSessionId;
 
-          console.log(
+          debugLog(
             "[WXCC Quick Transfer V12] eAgentChannelStateChanged event:",
             eventData
           );
@@ -1123,7 +1123,7 @@
               sessionId
             );
             this.sessionIdWasRestoredFromCache = false;
-            console.info(
+            debugLog(
               "[WXCC Quick Transfer V12] Captured agentSessionId from channel-state event."
             );
             this.loadTransferQueues();
@@ -1148,7 +1148,7 @@
           this.agentChannelStateChangedHandler
         );
 
-        console.info(
+        debugLog(
           "[WXCC Quick Transfer V12] Registered eAgentChannelStateChanged listener.",
           {
             hasAgentStateInfo: !!this.Desktop.agentStateInfo,
