@@ -570,15 +570,27 @@
     }
 
     restoreCachedAgentSession(agentProfileId) {
-      if (this.agentSessionId || !agentProfileId) return this.agentSessionId;
+      if (this.agentSessionId) {
+        console.info("[WXCC Quick Transfer V12] Session restore skipped; this widget instance already has an agentSessionId.");
+        return this.agentSessionId;
+      }
+      if (!agentProfileId) {
+        console.warn("[WXCC Quick Transfer V12] Session restore cannot run: agent profile ID is not available yet.");
+        return this.agentSessionId;
+      }
+      const cacheKey = this.getSessionCacheKey(agentProfileId);
       try {
-        const cached = sessionStorage.getItem(this.getSessionCacheKey(agentProfileId));
+        const cached = sessionStorage.getItem(cacheKey);
+        console.info("[WXCC Quick Transfer V12] Session cache checked.", {
+          agentProfileId: String(agentProfileId),
+          cacheKey,
+          cacheHit: !!cached,
+          cachedSessionLength: cached ? cached.length : 0
+        });
         if (cached) {
           this.agentSessionId = cached;
           this.sessionIdWasRestoredFromCache = true;
-          console.info(
-            "[WXCC Quick Transfer V12] Restored cached agentSessionId for current agent profile."
-          );
+          console.info("[WXCC Quick Transfer V12] Restored cached agentSessionId for current agent profile.");
         }
       } catch (error) {
         console.warn("[WXCC Quick Transfer V12] Could not read session cache:", error);
@@ -587,13 +599,24 @@
     }
 
     cacheAgentSession(agentProfileId, sessionId) {
-      if (!agentProfileId || !sessionId) return;
+      if (!agentProfileId || !sessionId) {
+        console.warn("[WXCC Quick Transfer V12] Session cache write skipped.", {
+          agentProfileIdAvailable: !!agentProfileId,
+          agentSessionIdAvailable: !!sessionId
+        });
+        return;
+      }
       this.agentSessionId = String(sessionId);
+      const cacheKey = this.getSessionCacheKey(agentProfileId);
       try {
-        sessionStorage.setItem(
-          this.getSessionCacheKey(agentProfileId),
-          this.agentSessionId
-        );
+        sessionStorage.setItem(cacheKey, this.agentSessionId);
+        const verified = sessionStorage.getItem(cacheKey);
+        console.info("[WXCC Quick Transfer V12] Session cache write verified.", {
+          agentProfileId: String(agentProfileId),
+          cacheKey,
+          writeVerified: verified === this.agentSessionId,
+          cachedSessionLength: verified ? verified.length : 0
+        });
       } catch (error) {
         console.warn("[WXCC Quick Transfer V12] Could not persist session cache:", error);
       }
