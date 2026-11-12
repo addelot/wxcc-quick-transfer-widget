@@ -683,27 +683,42 @@
 
       const match = matchById || matchByName;
 
-      if (!match || !match.analyzerId) {
+      if (!match) {
         throw new Error(
-          "Could not match this button to a transferable queue. " +
-          "Open the Console and check the Available telephony queues table. " +
-          "Use the matching queue analyzerId as queueId, or make the button label " +
-          "match the exact queue name."
+          "Queue not found in vteamList. The configured queue must be returned by Cisco's transfer queue lookup."
         );
       }
 
+      // Diagnostic fallback: this tenant's vteamList records expose id/dbId
+      // but no analyzerId. Cisco documents analyzerId as the normal vTeam ID.
+      // This test sends the returned UUID as data.to so the API response can
+      // confirm whether this tenant accepts that identifier.
+      const destinationId =
+        match.analyzerId ||
+        match.id ||
+        match.dbId ||
+        match.queueId ||
+        match.uuid;
+
+      if (!destinationId) {
+        throw new Error("Matched queue has no usable destination identifier.");
+      }
+
       console.info(
-        "[WXCC Quick Transfer V12] Resolved queue destination:",
+        "[WXCC Quick Transfer V12] Diagnostic queue destination:",
         {
           configuredQueueId: configuredId,
           configuredLabel: cfg.label,
           queueName: match.name,
           queueId: match.id,
-          analyzerId: match.analyzerId
+          dbId: match.dbId,
+          analyzerId: match.analyzerId,
+          destinationId,
+          identifierSource: match.analyzerId ? "analyzerId" : "UUID fallback (id/dbId)"
         }
       );
 
-      return match.analyzerId;
+      return destinationId;
     }
 
     async transfer(cfg) {
@@ -830,6 +845,11 @@
             });
         }
 
+        console.info(
+          "[WXCC Quick Transfer V12] Raw transfer API response:",
+          response
+        );
+
         const responseType =
           response?.type ||
           response?.data?.type ||
@@ -837,6 +857,8 @@
           "";
 
         if (
+          responseType === "AgentVteamTransferFailed" ||
+          responseType === "AgentVteamTransferFailedEvent" ||
           responseType === "AgentBlindTransferFailedEvent" ||
           responseType === "AgentBlindTransferFailed" ||
           responseType === "AgentConsultTransferFailedEvent" ||
