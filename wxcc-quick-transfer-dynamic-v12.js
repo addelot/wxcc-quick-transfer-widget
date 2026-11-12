@@ -27,6 +27,8 @@
       this.agentInfoUpdatedHandler = null;
       this.agentChannelStateChangedHandler = null;
       this.queueListRequestInProgress = false;
+      this.queueListPromise = null;
+      this.sessionIdWasRestoredFromCache = false;
 
       this.config = {
         title: "Quick Transfer",
@@ -563,17 +565,62 @@
       }
     }
 
+    getSessionCacheKey(agentProfileId) {
+      return "wxcc-quick-transfer-v12-session-" + String(agentProfileId);
+    }
+
+    restoreCachedAgentSession(agentProfileId) {
+      if (this.agentSessionId || !agentProfileId) return this.agentSessionId;
+      try {
+        const cached = sessionStorage.getItem(this.getSessionCacheKey(agentProfileId));
+        if (cached) {
+          this.agentSessionId = cached;
+          this.sessionIdWasRestoredFromCache = true;
+          console.info(
+            "[WXCC Quick Transfer V12] Restored cached agentSessionId for current agent profile."
+          );
+        }
+      } catch (error) {
+        console.warn("[WXCC Quick Transfer V12] Could not read session cache:", error);
+      }
+      return this.agentSessionId;
+    }
+
+    cacheAgentSession(agentProfileId, sessionId) {
+      if (!agentProfileId || !sessionId) return;
+      this.agentSessionId = String(sessionId);
+      try {
+        sessionStorage.setItem(
+          this.getSessionCacheKey(agentProfileId),
+          this.agentSessionId
+        );
+      } catch (error) {
+        console.warn("[WXCC Quick Transfer V12] Could not persist session cache:", error);
+      }
+    }
+
+    clearCachedAgentSession(agentProfileId) {
+      this.agentSessionId = null;
+      try {
+        if (agentProfileId) {
+          sessionStorage.removeItem(this.getSessionCacheKey(agentProfileId));
+        }
+      } catch (error) {
+        console.warn("[WXCC Quick Transfer V12] Could not clear session cache:", error);
+      }
+    }
+
     async loadTransferQueues() {
+      if (this.queueListPromise) {
+        return await this.queueListPromise;
+      }
 
-      if (this.queueListRequestInProgress) return;
-
-      const agentInfo =
-        this.Desktop?.agentStateInfo?.latestData || {};
-
+      const agentInfo = this.Desktop?.agentStateInfo?.latestData || {};
       const agentProfileId =
         agentInfo.agentProfileID ||
         agentInfo.agentProfileId;
 
+      this.restoreCachedAgentSession(agentProfileId);
       const agentSessionId =
         this.agentSessionId || agentInfo.agentSessionId;
 
@@ -586,14 +633,12 @@
             availableAgentInfoFields: Object.keys(agentInfo || {})
           }
         );
-        return;
+        return false;
       }
 
-      this.queueListRequestInProgress = true;
-
-      try {
-        const response =
-          await this.Desktop.agentContact.vteamList({
+      this.queueListPromise = (async () => {
+        try {
+          const response = await this.Desktop.agentContact.vteamList({
             data: {
               agentProfileId: String(agentProfileId),
               agentSessionId: String(agentSessionId),
@@ -608,51 +653,71 @@
             }
           });
 
-        console.log(
-          "[WXCC Quick Transfer V12] Raw vteamList response:",
-          response
-        );
-
-        const candidates = [
-          response?.data?.data?.vteamList,
-          response?.data?.vteamList,
-          response?.data?.data?.data?.vteamList,
-          response?.vteamList
-        ];
-
-        this.transferQueues =
-          candidates.find(Array.isArray) || [];
-
-        console.group(
-          "[WXCC Quick Transfer V12] Available telephony queues"
-        );
-
-        if (this.transferQueues.length) {
-          console.table(
-            this.transferQueues.map(queue => ({
-              name: queue.name,
-              analyzerId: queue.analyzerId,
-              id: queue.id,
-              type: queue.type,
-              channelType: queue.channelType
-            }))
+          console.log(
+            "[WXCC Quick Transfer V12] Raw vteamList response:",
+            response
           );
-        } else {
-          console.warn(
-            "No vteamList array was found. Check the raw response above."
+
+          const candidates = [
+            response?.data?.data?.vteamList,
+            response?.data?.vteamList,
+            response?.data?.data?.data?.vteamList,
+            response?.vteamList
+          ];
+
+          const queues = candidates.find(Array.isArray);
+          if (!queues) {
+            console.error(
+              "[WXCC Quick Transfer V12] vteamList response did not contain a queue array."
+            );
+            this.transferQueues = [];
+            return false;
+          }
+
+          this.transferQueues = queues;
+
+          console.group(
+            "[WXCC Quick Transfer V12] Available telephony queues"
           );
+
+          if (this.transferQueues.length) {
+            console.table(
+              this.transferQueues.map(queue => ({
+                name: queue.name,
+                analyzerId: queue.analyzerId,
+                id: queue.id,
+                type: queue.type,
+                channelType: queue.channelType
+              }))
+            );
+          } else {
+            console.warn("Cisco returned an empty transfer queue list.");
+          }
+
+          console.groupEnd();
+          return true;
+
+        } catch (error) {
+          console.error(
+            "[WXCC Quick Transfer V12] Queue lookup failed:",
+            error
+          );
+
+          // A cached session can become invalid after a fresh agent login.
+          // Clear it only when it was restored from storage; a new event can
+          // then provide the current session ID.
+          if (this.sessionIdWasRestoredFromCache) {
+            this.clearCachedAgentSession(agentProfileId);
+            this.sessionIdWasRestoredFromCache = false;
+          }
+          return false;
+
+        } finally {
+          this.queueListPromise = null;
         }
+      })();
 
-        console.groupEnd();
-
-      } catch (error) {
-        console.error(
-          "[WXCC Quick Transfer V12] Queue lookup failed:",
-          error
-        );
-      } finally {
-        this.queueListRequestInProgress = false;
-      }
+      return await this.queueListPromise;
     }
 
     resolveQueueDestination(cfg) {
@@ -783,7 +848,12 @@
         if (transferType === "queue") {
 
           if (!this.transferQueues.length) {
-            await this.loadTransferQueues();
+            const queuesLoaded = await this.loadTransferQueues();
+            if (!queuesLoaded) {
+              throw new Error(
+                "Transfer queues are not ready. The widget has no valid agent session ID yet. Change agent state once or wait for the session event, then retry."
+              );
+            }
           }
 
           const queueAnalyzerId =
@@ -982,7 +1052,11 @@
           );
 
           if (latestAgentInfo.agentSessionId) {
-            this.agentSessionId = latestAgentInfo.agentSessionId;
+            this.cacheAgentSession(
+              latestAgentInfo.agentProfileID || latestAgentInfo.agentProfileId,
+              latestAgentInfo.agentSessionId
+            );
+            this.sessionIdWasRestoredFromCache = false;
           }
 
           this.loadTransferQueues();
@@ -1011,7 +1085,11 @@
           );
 
           if (sessionId) {
-            this.agentSessionId = String(sessionId);
+            this.cacheAgentSession(
+              latestAgentInfo.agentProfileID || latestAgentInfo.agentProfileId,
+              sessionId
+            );
+            this.sessionIdWasRestoredFromCache = false;
             console.info(
               "[WXCC Quick Transfer V12] Captured agentSessionId from channel-state event."
             );
