@@ -580,11 +580,16 @@
       }
       const cacheKey = this.getSessionCacheKey(agentProfileId);
       try {
-        const cached = sessionStorage.getItem(cacheKey);
+        // localStorage is shared by same-origin widget iframe instances.
+        // sessionStorage is retained as a backward-compatible fallback.
+        const cached =
+          localStorage.getItem(cacheKey) ||
+          sessionStorage.getItem(cacheKey);
         console.info("[WXCC Quick Transfer V12] Session cache checked.", {
           agentProfileId: String(agentProfileId),
           cacheKey,
           cacheHit: !!cached,
+          cacheStorage: localStorage.getItem(cacheKey) ? "localStorage" : (cached ? "sessionStorage" : "none"),
           cachedSessionLength: cached ? cached.length : 0
         });
         if (cached) {
@@ -609,11 +614,15 @@
       this.agentSessionId = String(sessionId);
       const cacheKey = this.getSessionCacheKey(agentProfileId);
       try {
+        // Persist across widget iframe recreation on the same origin.
+        localStorage.setItem(cacheKey, this.agentSessionId);
+        // Also maintain the prior sessionStorage entry for compatibility.
         sessionStorage.setItem(cacheKey, this.agentSessionId);
-        const verified = sessionStorage.getItem(cacheKey);
+        const verified = localStorage.getItem(cacheKey);
         console.info("[WXCC Quick Transfer V12] Session cache write verified.", {
           agentProfileId: String(agentProfileId),
           cacheKey,
+          cacheStorage: "localStorage",
           writeVerified: verified === this.agentSessionId,
           cachedSessionLength: verified ? verified.length : 0
         });
@@ -626,6 +635,7 @@
       this.agentSessionId = null;
       try {
         if (agentProfileId) {
+          localStorage.removeItem(this.getSessionCacheKey(agentProfileId));
           sessionStorage.removeItem(this.getSessionCacheKey(agentProfileId));
         }
       } catch (error) {
