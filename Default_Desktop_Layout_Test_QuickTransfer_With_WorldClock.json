@@ -210,11 +210,54 @@
             },
             "children": [
               {
-                "comp": "wxcc-quick-transfer",
-                "script": "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPOSITORY/quick-transfer.js",
+                "comp": "wxcc-quick-transfer-v13",
+                "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@434d3d59e2f826c5f9f80d9a8e5ec1ecfbaec955/wxcc-quick-transfer-dynamic-v13.js",
                 "wrapper": {
                   "title": "Quick Transfer",
                   "maximizeAreaName": "app-maximize-area"
+                },
+                "attributes": {
+                  "title": "Quick Transfer",
+                  "columns": 2,
+                  "buttons": [
+                    {
+                      "label": "Sales",
+                      "number": "+46709246443",
+                      "type": "blind",
+                      "backgroundColor": "#2563eb",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Billing",
+                      "type": "blind",
+                      "backgroundColor": "#16a34a",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Technical Support",
+                      "type": "blind",
+                      "backgroundColor": "#f97316",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Reception",
+                      "type": "blind",
+                      "backgroundColor": "#9333ea",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Manager",
+                      "type": "blind",
+                      "backgroundColor": "#dc2626",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Other",
+                      "type": "blind",
+                      "backgroundColor": "#374151",
+                      "textColor": "#ffffff"
+                    }
+                  ]
                 }
               }
             ]
@@ -973,11 +1016,54 @@
             },
             "children": [
               {
-                "comp": "wxcc-quick-transfer",
-                "script": "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPOSITORY/quick-transfer.js",
+                "comp": "wxcc-quick-transfer-v13",
+                "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@434d3d59e2f826c5f9f80d9a8e5ec1ecfbaec955/wxcc-quick-transfer-dynamic-v13.js",
                 "wrapper": {
                   "title": "Quick Transfer",
                   "maximizeAreaName": "app-maximize-area"
+                },
+                "attributes": {
+                  "title": "Quick Transfer",
+                  "columns": 2,
+                  "buttons": [
+                    {
+                      "label": "Sales",
+                      "number": "+46709246443",
+                      "type": "blind",
+                      "backgroundColor": "#2563eb",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Billing",
+                      "type": "blind",
+                      "backgroundColor": "#16a34a",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Technical Support",
+                      "type": "blind",
+                      "backgroundColor": "#f97316",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Reception",
+                      "type": "blind",
+                      "backgroundColor": "#9333ea",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Manager",
+                      "type": "blind",
+                      "backgroundColor": "#dc2626",
+                      "textColor": "#ffffff"
+                    },
+                    {
+                      "label": "Other",
+                      "type": "blind",
+                      "backgroundColor": "#374151",
+                      "textColor": "#ffffff"
+                    }
+                  ]
                 }
               }
             ]
