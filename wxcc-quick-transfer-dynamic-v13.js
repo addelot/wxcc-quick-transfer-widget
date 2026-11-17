@@ -35,7 +35,6 @@
       this.queueListRequestInProgress = false;
       this.queueListPromise = null;
       this.sessionIdWasRestoredFromCache = false;
-      this.clockTimer = null;
 
       this.config = {
         title: "Quick Transfer",
@@ -158,55 +157,6 @@
             color: #1e40af;
           }
 
-
-          .clock-section {
-            margin: 0 0 18px 0;
-          }
-          .clock-heading {
-            margin: 0 0 10px 0;
-            font-size: 15px;
-            font-weight: 600;
-          }
-          .clock-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            width: 100%;
-          }
-          .clock-card {
-            min-width: 0;
-            padding: 12px;
-            border: 1px solid var(--wxcc-clock-border, #d1d5db);
-            border-radius: 10px;
-            background: var(--wxcc-clock-bg, rgba(127,127,127,.07));
-            box-sizing: border-box;
-          }
-          .clock-city {
-            font-size: 12px;
-            font-weight: 600;
-            opacity: .8;
-          }
-          .clock-time {
-            margin: 5px 0 2px;
-            font-size: clamp(20px, 3vw, 28px);
-            line-height: 1.15;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -.5px;
-          }
-          .clock-date {
-            font-size: 11px;
-            opacity: .72;
-          }
-          .clock-offset {
-            margin-top: 6px;
-            font-size: 10px;
-            opacity: .65;
-          }
-          @media (max-width: 520px) {
-            .clock-grid { grid-template-columns: 1fr; }
-          }
-
           @media (max-width: 700px) {
             .buttons {
               grid-template-columns: 1fr !important;
@@ -216,10 +166,6 @@
 
         <div class="root">
           <h2 id="title"></h2>
-          <section class="clock-section" aria-label="World clocks">
-            <div class="clock-heading">World Clock</div>
-            <div id="clocks" class="clock-grid"></div>
-          </section>
 
           <div id="status" class="status"></div>
 
@@ -231,77 +177,7 @@
     connectedCallback() {
       this.readLayoutConfig();
       this.render();
-      this.renderClocks();
-      this.clockTimer = setInterval(() => this.renderClocks(), 1000);
       this.start();
-    }
-
-
-    renderClocks() {
-      const container = this.shadow.getElementById("clocks");
-      if (!container) return;
-      const now = new Date();
-      const locations = [
-        { city: "Lund", country: "Sweden", zone: "Europe/Stockholm" },
-        { city: "Chelmsford", country: "United Kingdom", zone: "Europe/London" },
-        { city: "Tokyo", country: "Japan", zone: "Asia/Tokyo" }
-      ];
-      const formatter = (zone, options) => new Intl.DateTimeFormat("en-GB", {
-        timeZone: zone, ...options
-      });
-      const localDate = date => formatter("Europe/Stockholm", {
-        year: "numeric", month: "2-digit", day: "2-digit"
-      }).format(date);
-      const reference = now.getTime();
-      container.innerHTML = "";
-      locations.forEach(location => {
-        const card = document.createElement("div");
-        card.className = "clock-card";
-        const city = document.createElement("div");
-        city.className = "clock-city";
-        city.textContent = location.city + " · " + location.country;
-        const time = document.createElement("div");
-        time.className = "clock-time";
-        time.textContent = formatter(location.zone, {
-          hour: "2-digit", minute: "2-digit", second: "2-digit",
-          hourCycle: "h23"
-        }).format(now);
-        const date = document.createElement("div");
-        date.className = "clock-date";
-        date.textContent = formatter(location.zone, {
-          weekday: "short", day: "2-digit", month: "short", year: "numeric"
-        }).format(now);
-        const offset = document.createElement("div");
-        offset.className = "clock-offset";
-        const parts = formatter(location.zone, {
-          timeZoneName: "short"
-        }).formatToParts(now);
-        const zoneName = parts.find(part => part.type === "timeZoneName")?.value || location.zone;
-        const londonOffset = this.getUtcOffsetMinutes(location.zone, reference);
-        const stockholmOffset = this.getUtcOffsetMinutes("Europe/Stockholm", reference);
-        const difference = (londonOffset - stockholmOffset) / 60;
-        const delta = difference === 0 ? "Same time as Lund" :
-          (difference > 0 ? "+" : "") + difference + "h vs Lund";
-        offset.textContent = zoneName + " · " + delta;
-        card.append(city, time, date, offset);
-        container.appendChild(card);
-      });
-    }
-
-    getUtcOffsetMinutes(timeZone, timestamp) {
-      const date = new Date(timestamp);
-      const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone, hourCycle: "h23",
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit"
-      }).formatToParts(date);
-      const values = {};
-      parts.forEach(part => {
-        if (part.type !== "literal") values[part.type] = Number(part.value);
-      });
-      const asUtc = Date.UTC(values.year, values.month - 1, values.day,
-        values.hour, values.minute, values.second);
-      return Math.round((asUtc - Math.floor(timestamp / 1000) * 1000) / 60000);
     }
 
     readLayoutConfig() {
@@ -1185,7 +1061,7 @@
         this.Desktop = await this.loadSDK();
 
         await this.Desktop.config.init(
-          "quick-transfer-v12",
+          "quick-transfer-v13",
           "Axis"
         );
 
@@ -1304,11 +1180,6 @@
     }
 
     disconnectedCallback() {
-
-      if (this.clockTimer) {
-        clearInterval(this.clockTimer);
-        this.clockTimer = null;
-      }
 
       if (this.pollTimer) {
         clearInterval(this.pollTimer);
