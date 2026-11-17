@@ -12,15 +12,15 @@
       this.shadow.innerHTML = `
         <style>
           :host { display:block; width:100%; box-sizing:border-box; font-family:inherit; color:var(--wxcc-clock-text, inherit); }
-          .root { box-sizing:border-box; width:100%; padding:14px; }
-          .heading { margin:0 0 12px; font-size:16px; font-weight:600; }
-          .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-          .card { min-width:0; box-sizing:border-box; padding:14px; border:1px solid var(--wxcc-clock-border,#d1d5db); border-radius:10px; background:var(--wxcc-clock-bg,rgba(127,127,127,.07)); }
-          .city { font-size:13px; font-weight:600; opacity:.82; }
-          .time { margin:7px 0 3px; font-size:clamp(22px,3vw,30px); line-height:1.15; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.5px; }
-          .date { font-size:12px; opacity:.75; }
-          .zone { margin-top:7px; font-size:11px; opacity:.65; }
-          @media(max-width:600px) { .grid { grid-template-columns:1fr; } }
+          :host { width:auto; max-width:100%; }
+          .root { box-sizing:border-box; width:auto; padding:0 10px; }
+          .heading { display:none; }
+          .grid { display:flex; flex-direction:row; align-items:center; gap:16px; white-space:nowrap; }
+          .card { display:flex; align-items:baseline; gap:6px; min-width:0; box-sizing:border-box; padding:0; border:0; border-radius:0; background:transparent; }
+          .city { font-size:11px; font-weight:600; opacity:.78; }
+          .time { margin:0; font-size:14px; line-height:1.2; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:0; }
+          .date, .zone { display:none; }
+          @media(max-width:760px) { .grid { gap:8px; } .city { font-size:10px; } .time { font-size:12px; } }
         </style>
         <section class="root" aria-label="World clock">
           <div class="heading">World Clock</div>
