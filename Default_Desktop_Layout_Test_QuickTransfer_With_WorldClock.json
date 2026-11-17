@@ -27,6 +27,13 @@
           }
         },
         {
+          "comp": "wxcc-world-clock-v1",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "attributes": {
+            "style": "display:flex;align-items:center;justify-content:center;"
+          }
+        },
+        {
           "comp": "ai-assistant"
         },
         {
@@ -220,42 +227,6 @@
             },
             "children": [
               {
-                "comp": "md-icon",
-                "attributes": {
-                  "name": "clock_16"
-                }
-              },
-              {
-                "comp": "span",
-                "textContent": "World Clock"
-              }
-            ]
-          },
-          {
-            "comp": "md-tab-panel",
-            "attributes": {
-              "slot": "panel",
-              "class": "widget-pane"
-            },
-            "children": [
-              {
-                "comp": "wxcc-world-clock-v1",
-                "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
-                "wrapper": {
-                  "title": "World Clock",
-                  "maximizeAreaName": "app-maximize-area"
-                }
-              }
-            ]
-          },
-          {
-            "comp": "md-tab",
-            "attributes": {
-              "slot": "tab",
-              "class": "widget-pane-tab"
-            },
-            "children": [
-              {
                 "comp": "slot",
                 "attributes": {
                   "name": "SCREEN_POP_TAB"
@@ -301,6 +272,13 @@
       "advancedHeader": [
         {
           "comp": "agentx-webex"
+        },
+        {
+          "comp": "wxcc-world-clock-v1",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "attributes": {
+            "style": "display:flex;align-items:center;justify-content:center;"
+          }
         },
         {
           "comp": "agentx-notification"
@@ -471,42 +449,6 @@
               }
             ],
             "visibility": "SCREEN_POP"
-          },
-          {
-            "comp": "md-tab",
-            "attributes": {
-              "slot": "tab",
-              "class": "widget-pane-tab"
-            },
-            "children": [
-              {
-                "comp": "md-icon",
-                "attributes": {
-                  "name": "clock_16"
-                }
-              },
-              {
-                "comp": "span",
-                "textContent": "World Clock"
-              }
-            ]
-          },
-          {
-            "comp": "md-tab-panel",
-            "attributes": {
-              "slot": "panel",
-              "class": "widget-pane"
-            },
-            "children": [
-              {
-                "comp": "wxcc-world-clock-v1",
-                "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
-                "wrapper": {
-                  "title": "World Clock",
-                  "maximizeAreaName": "app-maximize-area"
-                }
-              }
-            ]
           }
         ]
       },
@@ -848,6 +790,13 @@
           }
         },
         {
+          "comp": "wxcc-world-clock-v1",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "attributes": {
+            "style": "display:flex;align-items:center;justify-content:center;"
+          }
+        },
+        {
           "comp": "ai-assistant"
         },
         {
@@ -1028,42 +977,6 @@
                 "script": "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPOSITORY/quick-transfer.js",
                 "wrapper": {
                   "title": "Quick Transfer",
-                  "maximizeAreaName": "app-maximize-area"
-                }
-              }
-            ]
-          },
-          {
-            "comp": "md-tab",
-            "attributes": {
-              "slot": "tab",
-              "class": "widget-pane-tab"
-            },
-            "children": [
-              {
-                "comp": "md-icon",
-                "attributes": {
-                  "name": "clock_16"
-                }
-              },
-              {
-                "comp": "span",
-                "textContent": "World Clock"
-              }
-            ]
-          },
-          {
-            "comp": "md-tab-panel",
-            "attributes": {
-              "slot": "panel",
-              "class": "widget-pane"
-            },
-            "children": [
-              {
-                "comp": "wxcc-world-clock-v1",
-                "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
-                "wrapper": {
-                  "title": "World Clock",
                   "maximizeAreaName": "app-maximize-area"
                 }
               }
