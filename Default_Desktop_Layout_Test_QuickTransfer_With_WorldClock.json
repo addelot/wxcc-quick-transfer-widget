@@ -296,6 +296,42 @@
           }
         ]
       }
+    },
+    "homepage": {
+      "nav": {
+        "label": "$I18N.common.homePageLabel",
+        "icon": "home",
+        "iconActive": "home-active",
+        "iconType": "momentum",
+        "navigateTo": "home",
+        "align": "top"
+      },
+      "page": {
+        "id": "landing",
+        "useFlexLayout": true,
+        "pageHeader": {
+          "comp": "div",
+          "children": [
+            {
+              "comp": "page-title",
+              "attributes": {
+                "pageTitle": "$STORE.page.getDefaultPageTitle"
+              }
+            }
+          ],
+          "attributes": {
+            "style": "margin: 20px 24px 8px 24px"
+          }
+        },
+        "widgets": {
+          "comp1": {
+            "comp": "wxcc-agent-home-v1",
+            "script": "https://raw.githubusercontent.com/addelot/wxcc-quick-transfer-widget/96c28e05152ef2bf370923ab13f2640142b34087/wxcc-agent-home-v1.js",
+            "width": 12,
+            "height": 18
+          }
+        }
+      }
     }
   },
   "supervisor": {
