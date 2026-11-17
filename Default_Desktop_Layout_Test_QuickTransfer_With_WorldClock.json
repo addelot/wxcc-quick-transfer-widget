@@ -28,7 +28,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
+          "script": "https://raw.githubusercontent.com/addelot/wxcc-quick-transfer-widget/e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
@@ -318,7 +318,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
+          "script": "https://raw.githubusercontent.com/addelot/wxcc-quick-transfer-widget/e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
@@ -834,7 +834,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
+          "script": "https://raw.githubusercontent.com/addelot/wxcc-quick-transfer-widget/e9f3af6f2350419d70b771c66439fca739587dac/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
