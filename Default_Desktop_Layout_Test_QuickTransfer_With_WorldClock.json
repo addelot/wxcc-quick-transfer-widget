@@ -28,7 +28,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@cf59281ce9a127c610d50bfa0248033a477bc430/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
@@ -275,7 +275,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@cf59281ce9a127c610d50bfa0248033a477bc430/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
@@ -791,7 +791,7 @@
         },
         {
           "comp": "wxcc-world-clock-v1",
-          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@feature/v13-world-clock-business-hours/wxcc-world-clock-v1.js",
+          "script": "https://cdn.jsdelivr.net/gh/addelot/wxcc-quick-transfer-widget@cf59281ce9a127c610d50bfa0248033a477bc430/wxcc-world-clock-v1.js",
           "attributes": {
             "style": "display:flex;align-items:center;justify-content:center;"
           }
