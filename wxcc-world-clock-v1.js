@@ -45,7 +45,7 @@
       const now = new Date();
       const locations = [
         { city:"Lund", country:"Sweden", zone:"Europe/Stockholm" },
-        { city:"Chelmsford", country:"United Kingdom", zone:"Europe/London" },
+        { city:"Chelmsford", country:"Massachusetts, USA", zone:"America/New_York" },
         { city:"Tokyo", country:"Japan", zone:"Asia/Tokyo" }
       ];
       const fmt = (zone, options) => new Intl.DateTimeFormat("en-GB", { timeZone:zone, ...options });
